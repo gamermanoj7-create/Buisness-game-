@@ -1,0 +1,101 @@
+import React, { useEffect, useState } from "react";
+
+type GameState = any;
+type Decision = {
+  marketingSpend: number;
+  price: number;
+  productInvestment: number;
+  hires: number;
+};
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+export default function App() {
+  const [state, setState] = useState<GameState | null>(null);
+  const [decision, setDecision] = useState<Decision>({
+    marketingSpend: 2000,
+    price: 30,
+    productInvestment: 0,
+    hires: 0
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API}/api/new`).then(r => r.json()).then(setState);
+  }, []);
+
+  async function resolveTurn() {
+    setLoading(true);
+    const res = await fetch(`${API}/api/step`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(decision)
+    });
+    const next = await res.json();
+    setState(next);
+    setLoading(false);
+  }
+
+  if (!state) return <div>Loading...</div>;
+
+  const latest = state.history[state.history.length - 1] || null;
+
+  return (
+    <div className="app">
+      <h1>Business Game — MVP</h1>
+      <div className="grid">
+        <div className="panel">
+          <h2>Decisions (Turn {state.turn + 1})</h2>
+          <label>Marketing Spend:
+            <input type="number" value={decision.marketingSpend}
+              onChange={e => setDecision({ ...decision, marketingSpend: Number(e.target.value) })} />
+          </label>
+          <label>Price:
+            <input type="number" value={decision.price}
+              onChange={e => setDecision({ ...decision, price: Number(e.target.value) })} />
+          </label>
+          <label>Product Investment:
+            <input type="number" value={decision.productInvestment}
+              onChange={e => setDecision({ ...decision, productInvestment: Number(e.target.value) })} />
+          </label>
+          <label>Hires (this turn):
+            <input type="number" value={decision.hires}
+              onChange={e => setDecision({ ...decision, hires: Number(e.target.value) })} />
+          </label>
+          <button onClick={resolveTurn} disabled={loading}>Resolve Turn</button>
+        </div>
+
+        <div className="panel">
+          <h2>Dashboard</h2>
+          <p>Turn: {state.turn}</p>
+          <p>Cash: ${Math.round(state.cash)}</p>
+          <p>Employees: {state.employees}</p>
+          <p>Product Attractiveness: {state.productAttractiveness.toFixed(2)}</p>
+          <p>Morale: {state.morale.toFixed(2)}</p>
+          <p>Last Revenue: ${Math.round(state.lastRevenue)}</p>
+          <p>Last Customers: {state.lastCustomers}</p>
+          {latest?.event && <p>Event: {latest.event}</p>}
+        </div>
+      </div>
+
+      <div className="history panel">
+        <h2>History</h2>
+        <table>
+          <thead><tr><th>Turn</th><th>Revenue</th><th>NetProfit</th><th>Cash</th><th>Customers</th><th>Event</th></tr></thead>
+          <tbody>
+            {state.history.slice().reverse().map((h: any) => (
+              <tr key={h.turn}>
+                <td>{h.turn}</td>
+                <td>${Math.round(h.revenue)}</td>
+                <td>${Math.round(h.netProfit)}</td>
+                <td>${Math.round(h.cash)}</td>
+                <td>{h.customers}</td>
+                <td>{h.event || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

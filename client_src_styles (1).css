@@ -1,0 +1,10 @@
+body { font-family: Arial, sans-serif; margin: 16px; background:#f5f7fb; color:#111; }
+.app h1 { margin-bottom: 12px; }
+.grid { display:flex; gap:12px; align-items:flex-start; }
+.panel { background:white; padding:12px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.08); width:320px; }
+.panel label { display:block; margin:8px 0; }
+.panel input { width:100%; padding:6px; margin-top:4px; }
+.history { width:100%; }
+table { width:100%; border-collapse:collapse; }
+th, td { border-bottom:1px solid #eee; padding:6px 8px; text-align:left; }
+button { padding:8px 12px; margin-top:8px; cursor:pointer; }
